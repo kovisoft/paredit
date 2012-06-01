@@ -1,7 +1,7 @@
 " paredit.vim:
 "               Paredit mode for Slimv
-" Version:      0.9.7
-" Last Change:  22 May 2012
+" Version:      0.9.8
+" Last Change:  01 Jun 2012
 " Maintainer:   Tamas Kovacs <kovisoft at gmail dot com>
 " License:      This file is placed in the public domain.
 "               No warranty, express or implied.
@@ -662,6 +662,13 @@ function! PareditInsertClosing( open, close )
     if g:paredit_electric_return && newpos[0] > line('.')
         " Closing paren is in a line below, check if there are electric returns to re-gather
         let nextline = getline( line('.') + 1 )
+        while nextline =~ '^\s*$'
+            " Delete all empty lines till the closing paren
+            let oldpos = getpos( '.' ) 
+            normal! jdd
+            call setpos( '.', oldpos )
+            let nextline = getline( line('.') + 1 )
+        endwhile
         let nextline = substitute( nextline, '\s', '', 'g' )
         if len(nextline) > 0 && nextline[0] == ')'
             " Re-gather electric returns in the line of the closing ')'
