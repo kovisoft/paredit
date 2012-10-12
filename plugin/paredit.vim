@@ -39,6 +39,12 @@ if !exists( 'g:paredit_shortmaps' )
     let g:paredit_shortmaps = 0
 endif
 
+" Use smart jumping to the nearest paren, curly brace, or square bracket in
+" clojure
+if !exists( 'g:paredit_smartjump' )
+    let g:paredit_smartjump = 0
+endif
+
 " Custom <Leader> for the Paredit plugin
 if !exists( 'g:paredit_leader' )
     if exists( 'mapleader' )
@@ -141,6 +147,12 @@ function! PareditInitBuffer()
         execute 'nmap     <buffer> <silent> ' . g:paredit_leader.'<Down>  d])%,S'
         execute 'nmap     <buffer> <silent> ' . g:paredit_leader.'I   :<C-U>call PareditRaise()<CR>'
         if &ft == 'clojure'
+            if g:paredit_smartjump
+                nnoremap <buffer> <silent> (            :<C-U>call PareditSmartJumpOpening(0)<CR>
+                nnoremap <buffer> <silent> )            :<C-U>call PareditSmartJumpClosing(0)<CR>
+                vnoremap <buffer> <silent> (            <Esc>:<C-U>call PareditSmartJumpOpening(1)<CR>
+                vnoremap <buffer> <silent> )            <Esc>:<C-U>call PareditSmartJumpClosing(1)<CR>
+            endif
             inoremap <buffer> <expr>   [            PareditInsertOpening('[',']')
             inoremap <buffer> <silent> ]            <C-R>=(pumvisible() ? "\<lt>C-Y>" : "")<CR><C-O>:let save_ve=&ve<CR><C-O>:set ve=onemore<CR><C-O>:<C-U>call PareditInsertClosing('[',']')<CR><C-O>:let &ve=save_ve<CR>
             inoremap <buffer> <expr>   {            PareditInsertOpening('{','}')
@@ -619,6 +631,50 @@ function! PareditFindClosing( open, close, select )
         normal! l
     else
         call searchpair( open, '', close, 'W', s:skip_sc )
+    endif
+endfunction
+
+" Returns the nearest opening character to the cursor
+" Used for smart jumping in Clojure
+function! PareditSmartJumpOpening( select )
+    let pos = getpos('.')
+    let [paren_line, paren_col] = searchpairpos('(','',')','bW')
+    call setpos('.', pos)
+    let [bracket_line, bracket_col] = searchpairpos('\[','','\]','bW')
+    call setpos('.', pos)
+    let [brace_line, brace_col] = searchpairpos('{','','}','bW')
+    call setpos('.', pos)
+    let paren_score = paren_line * 10000 + paren_col
+    let bracket_score = bracket_line * 10000 + bracket_col
+    let brace_score = brace_line * 10000 + brace_col
+    if (brace_score > paren_score || paren_score == 0) && (brace_score > bracket_score || bracket_score == 0) && brace_score != 0
+	call PareditFindOpening('{','}', a:select)
+    elseif (bracket_score > paren_score || paren_score == 0) && bracket_score != 0
+	call PareditFindOpening('[',']', a:select)
+    else
+	call PareditFindOpening('(',')', a:select)
+    endif
+endfunction
+
+" Returns the nearest opening character to the cursor
+" Used for smart jumping in Clojure
+function! PareditSmartJumpClosing( select )
+    let pos = getpos('.')
+    let [paren_line, paren_col] = searchpairpos('(','',')','W')
+    call setpos('.', pos)
+    let [bracket_line, bracket_col] = searchpairpos('\[','','\]','W')
+    call setpos('.', pos)
+    let [brace_line, brace_col] = searchpairpos('{','','}','W')
+    call setpos('.', pos)
+    let paren_score = paren_line * 10000 + paren_col
+    let bracket_score = bracket_line * 10000 + bracket_col
+    let brace_score = brace_line * 10000 + brace_col
+    if (brace_score < paren_score || paren_score == 0) && (brace_score < bracket_score || bracket_score == 0) && brace_score != 0
+	call PareditFindClosing('{','}', a:select)
+    elseif (bracket_score < paren_score || paren_score == 0) && bracket_score != 0
+	call PareditFindClosing('[',']', a:select)
+    else
+	call PareditFindClosing('(',')', a:select)
     endif
 endfunction
 
