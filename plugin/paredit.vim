@@ -85,7 +85,7 @@ function! PareditInitBuffer()
     " Make sure to include special characters in 'iskeyword'
     " in case they are accidentally removed
     " Also define regular expressions to identify special characters used by paredit
-    if &ft == 'clojure'
+    if &ft =~ '.*clojure.*'
         setlocal iskeyword+=+,-,*,/,%,<,=,>,:,$,?,!,@-@,94,~,#,\|,&
         let b:any_matched_char   = '(\|)\|\[\|\]\|{\|}\|\"'
         let b:any_matched_pair   = '()\|\[\]\|{}\|\"\"'
@@ -146,7 +146,7 @@ function! PareditInitBuffer()
         execute 'nmap     <buffer> <silent> ' . g:paredit_leader.'<Up>    d[(,S'
         execute 'nmap     <buffer> <silent> ' . g:paredit_leader.'<Down>  d])%,S'
         execute 'nmap     <buffer> <silent> ' . g:paredit_leader.'I   :<C-U>call PareditRaise()<CR>'
-        if &ft == 'clojure'
+        if &ft =~ '.*clojure.*'
             if g:paredit_smartjump
                 nnoremap <buffer> <silent> (            :<C-U>call PareditSmartJumpOpening(0)<CR>
                 nnoremap <buffer> <silent> )            :<C-U>call PareditSmartJumpClosing(0)<CR>
@@ -220,7 +220,7 @@ function! PareditInitBuffer()
         silent! unmap  <buffer> cb
         silent! unmap  <buffer> ciw
         silent! unmap  <buffer> caw
-        if &ft == 'clojure'
+        if &ft =~ '.*clojure.*'
             silent! iunmap <buffer> [
             silent! iunmap <buffer> ]
             silent! iunmap <buffer> {
@@ -512,7 +512,7 @@ function! s:IsBalanced()
         return 0
     endif
 
-    if &ft == 'clojure'
+    if &ft =~ '.*clojure.*'
         let b1 = searchpair( '\[', '', '\]', 'brnmW', s:skip_sc, matchb )
         let b2 = searchpair( '\[', '', '\]',  'rnmW', s:skip_sc, matchf )
         if !(b1 == b2) && !(b1 == b2 - 1 && line[c-1] == '[') && !(b1 == b2 + 1 && line[c-1] == ']')
@@ -575,7 +575,7 @@ function! s:Unbalanced( matched )
     while 1
         let matched = tmp
         let tmp = substitute( tmp, '(\(\s*\))',   ' \1 ', 'g')
-        if &ft == 'clojure'
+        if &ft =~ '.*clojure.*'
             let tmp = substitute( tmp, '\[\(\s*\)\]', ' \1 ', 'g')
             let tmp = substitute( tmp, '{\(\s*\)}',   ' \1 ', 'g')
         endif
@@ -583,7 +583,7 @@ function! s:Unbalanced( matched )
         if tmp == matched
             " All paired chars eliminated
             let tmp = substitute( tmp, ')\(\s*\)(',   ' \1 ', 'g')
-            if &ft == 'clojure'
+            if &ft =~ '.*clojure.*'
                 let tmp = substitute( tmp, '\]\(\s*\)\[', ' \1 ', 'g')
                 let tmp = substitute( tmp, '}\(\s*\){',   ' \1 ', 'g')
             endif
@@ -638,12 +638,9 @@ endfunction
 " Used for smart jumping in Clojure
 function! PareditSmartJumpOpening( select )
     let pos = getpos('.')
-    let [paren_line, paren_col] = searchpairpos('(','',')','bW')
-    call setpos('.', pos)
-    let [bracket_line, bracket_col] = searchpairpos('\[','','\]','bW')
-    call setpos('.', pos)
-    let [brace_line, brace_col] = searchpairpos('{','','}','bW')
-    call setpos('.', pos)
+    let [paren_line, paren_col] = searchpairpos('(','',')','bWn')
+    let [bracket_line, bracket_col] = searchpairpos('\[','','\]','bWn')
+    let [brace_line, brace_col] = searchpairpos('{','','}','bWn')
     let paren_score = paren_line * 10000 + paren_col
     let bracket_score = bracket_line * 10000 + bracket_col
     let brace_score = brace_line * 10000 + brace_col
@@ -660,12 +657,9 @@ endfunction
 " Used for smart jumping in Clojure
 function! PareditSmartJumpClosing( select )
     let pos = getpos('.')
-    let [paren_line, paren_col] = searchpairpos('(','',')','W')
-    call setpos('.', pos)
-    let [bracket_line, bracket_col] = searchpairpos('\[','','\]','W')
-    call setpos('.', pos)
-    let [brace_line, brace_col] = searchpairpos('{','','}','W')
-    call setpos('.', pos)
+    let [paren_line, paren_col] = searchpairpos('(','',')','Wn')
+    let [bracket_line, bracket_col] = searchpairpos('\[','','\]','Wn')
+    let [brace_line, brace_col] = searchpairpos('{','','}','Wn')
     let paren_score = paren_line * 10000 + paren_col
     let bracket_score = bracket_line * 10000 + bracket_col
     let brace_score = brace_line * 10000 + brace_col
@@ -754,7 +748,7 @@ function! s:ReGatherUp()
             normal! ddk
         endwhile
         normal! Jl
-    elseif g:paredit_electric_return && getline('.') =~ '^\s*\(\]\|}\)' && &ft == 'clojure' 
+    elseif g:paredit_electric_return && getline('.') =~ '^\s*\(\]\|}\)' && &ft =~ '.*clojure.*' 
         " Re-gather electric returns in the current line for ']' and '}'
         normal! k
         while getline( line('.') ) =~ '^\s*$'
@@ -808,7 +802,7 @@ function! PareditInsertClosing( open, close )
             call feedkeys( "\<Right>", 'n' )
             return
         endif
-        if len(nextline) > 0 && nextline[0] =~ '\]\|}' && &ft == 'clojure' 
+        if len(nextline) > 0 && nextline[0] =~ '\]\|}' && &ft =~ '.*clojure.*' 
             " Re-gather electric returns in the line of the closing ']' or '}'
             call setline( line('.'), substitute( line, '\s*$', '', 'g' ) )
             normal! Jxl
@@ -1425,7 +1419,7 @@ function! s:FindClosing()
     endif
     call setpos( '.', [0, l, c, 0] )
 
-    if &ft == 'clojure'
+    if &ft =~ '.*clojure.*'
         call PareditFindClosing( '[', ']', 0 )
         let lp = line( '.' )
         let cp = col( '.' )
@@ -1625,4 +1619,5 @@ au BufNewFile,BufRead *.clj  call PareditInitBuffer()
 au BufNewFile,BufRead *.cljs call PareditInitBuffer()
 au BufNewFile,BufRead *.scm  call PareditInitBuffer()
 au BufNewFile,BufRead *.rkt  call PareditInitBuffer()
+au FileType *clojure*        call PareditInitBuffer()
 
