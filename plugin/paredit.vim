@@ -1608,10 +1608,34 @@ endfunction
 " Stand on the opening paren (if not wrapping in "")
 function! PareditWrap( open, close )
     let isk_save = s:SetKeyword()
-    if a:open != '"' && getline('.')[col('.') - 1] =~ b:any_openclose_char
+    let line = line('.')
+    let column = col('.')
+    let line_content = getline(line)
+    let current_char = line_content[column - 1]
+
+    if a:open != '"' && current_char =~ b:any_openclose_char
         execute "normal! " . "v%\<Esc>"
     else
-        execute "normal! " . "viw\<Esc>"
+        if current_char == '"'
+            let is_starting_quote = 1
+            if column == 1 && line > 1
+                let endOfPreviousLine = col([line - 1, '$'])
+                if s:InsideString(line - 1, endOfPreviousLine - 1)
+                    let is_starting_quote = 0
+                endif
+            elseif s:InsideString(line, column - 2)
+                if line_content[column - 2] != '"'
+                    let is_starting_quote = 0
+                endif
+            endif
+            if is_starting_quote
+                execute "normal! " . "v/\"\<CR>\<Esc>"
+            else
+                execute "normal! " . "v?\"\<CR>\<Esc>"
+            endif
+        else
+            execute "normal! " . "viw\<Esc>"
+        endif
     endif
     call s:WrapSelection( a:open, a:close )
     if a:open != '"'
