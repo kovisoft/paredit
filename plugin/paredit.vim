@@ -1608,6 +1608,7 @@ endfunction
 " Stand on the opening paren (if not wrapping in "")
 function! PareditWrap( open, close )
     let isk_save = s:SetKeyword()
+    let sel_save = &selection
     let line = line('.')
     let column = col('.')
     let line_content = getline(line)
@@ -1616,22 +1617,39 @@ function! PareditWrap( open, close )
     if a:open != '"' && current_char =~ b:any_openclose_char
         execute "normal! " . "v%\<Esc>"
     else
-        if current_char == '"'
-            let is_starting_quote = 1
-            if column == 1 && line > 1
-                let endOfPreviousLine = col([line - 1, '$'])
-                if s:InsideString(line - 1, endOfPreviousLine - 1)
-                    let is_starting_quote = 0
-                endif
-            elseif s:InsideString(line, column - 2)
-                if line_content[column - 2] != '"'
-                    let is_starting_quote = 0
-                endif
-            endif
-            if is_starting_quote
-                execute "normal! " . "v/\"\<CR>\<Esc>"
+        let inside_comment = s:InsideComment(line, column - 1)
+
+        if current_char == '"' && !inside_comment
+            let escaped_quote = line_content[column - 2] == "\\"
+            if escaped_quote
+                execute "normal! " . "vh\<Esc>"
             else
-                execute "normal! " . "v?\"\<CR>\<Esc>"
+                let is_starting_quote = 1
+                if column == 1 && line > 1
+                    let endOfPreviousLine = col([line - 1, '$'])
+                    if s:InsideString(line - 1, endOfPreviousLine - 1)
+                        let previous_line_content = getline(line - 1)
+                        if previous_line_content[endOfPreviousLine - 2] != '"'
+                            let is_starting_quote = 0
+                        elseif previous_line_content[endOfPreviousLine - 3] == "\\"
+                            let is_starting_quote = 0
+                        endif
+                    endif
+                elseif s:InsideString(line, column - 2)
+                    if line_content[column - 2] != '"'
+                        let is_starting_quote = 0
+                    elseif line_content[column - 3] == "\\"
+                        let is_starting_quote = 0
+                    endif
+                endif
+                let &selection="inclusive"
+                normal! v
+                if is_starting_quote
+                    call search( '\\\@<!"', 'W', s:skip_sc )
+                else
+                    call search( '\\\@<!"', 'bW', s:skip_sc )
+                endif
+                execute "normal! " . "\<Esc>"
             endif
         else
             execute "normal! " . "viw\<Esc>"
@@ -1641,6 +1659,7 @@ function! PareditWrap( open, close )
     if a:open != '"'
         normal! %
     endif
+    let &selection = sel_save
     let &iskeyword = isk_save
 endfunction
 
