@@ -238,7 +238,7 @@ function! RepeatableMap(map_type, keys, command)
   execute a:map_type . ' <silent> <buffer> ' .
         \ a:keys . ' ' . a:command .
         \ ':echom "' . escaped_keys '"<cr>' .
-        \ ':call repeat#set("' . escaped_keys . '")<CR>'
+        \ ':silent! call repeat#set("' . escaped_keys . '")<CR>'
 endfunction
 
 function! RepeatableNMap(keys, command)
