@@ -1675,6 +1675,8 @@ function! PareditWrap( open, close )
     call s:WrapSelection( a:open, a:close )
     if a:open != '"'
         normal! %
+    else
+      call cursor(line, column + 1)
     endif
     let &selection = sel_save
     let &iskeyword = isk_save
