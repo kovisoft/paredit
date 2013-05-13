@@ -237,7 +237,6 @@ function! RepeatableMap(map_type, keys, command)
   let escaped_keys = substitute(a:keys, '["<]', '\\\0', "g")
   execute a:map_type . ' <silent> <buffer> ' .
         \ a:keys . ' ' . a:command .
-        \ ':echom "' . escaped_keys '"<cr>' .
         \ ':silent! call repeat#set("' . escaped_keys . '")<CR>'
 endfunction
 
