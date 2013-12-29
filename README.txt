@@ -26,10 +26,5 @@ Please note that Paredit version numbers follow the Slimv versioning because par
 
 See the included documentation for more complete installation and customization instructions.
 
---------------------------------------------------------------------------------
-Script versions
---------------------------------------------------------------------------------
-
-0.9.6: Initial insertion extracted from the Slimv plugin.
 
 vim:et:wrap:
