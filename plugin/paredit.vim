@@ -1731,7 +1731,11 @@ function! PareditRaise()
 
         " Raise sub-form and re-indent
         exe "normal! y%d%da" . p
-        normal! "0p=%
+        if getline('.')[col('.')-1] == ' '
+          normal! "0p=%
+        else
+          normal! "0P=%
+        endif
     else
         let [p, l, c] = s:FindClosing()
         if p !~ b:any_closing_char
