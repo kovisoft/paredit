@@ -1721,12 +1721,26 @@ endfunction
 function! PareditRaise()
     let isk_save = s:SetKeyword()
     if getline('.')[col('.')-1] =~ b:any_openclose_char
+        normal! %
+
+        let [p, l, c] = s:FindClosing()
+        if p !~ b:any_closing_char
+            " Not found any kind of parens
+            return
+        endif
+
         " Raise sub-form and re-indent
-        normal! y%d%dab
-        normal! "0P=%
+        exe "normal! y%d%da" . p
+        normal! "0p=%
     else
+        let [p, l, c] = s:FindClosing()
+        if p !~ b:any_closing_char
+            " Not found any kind of parens
+            return
+        endif
+
         " Raise symbol
-        normal! yiwdab
+        exe "normal! yiwda" . p
         normal! "0Pb
     endif
     let &iskeyword = isk_save
