@@ -1720,32 +1720,35 @@ endfunction
 " Raise: replace containing form with the current symbol or sub-form
 function! PareditRaise()
     let isk_save = s:SetKeyword()
-    if getline('.')[col('.')-1] =~ b:any_openclose_char
-        normal! %
-
-        let [p, l, c] = s:FindClosing()
-        if p !~ b:any_closing_char
-            " Not found any kind of parens
-            return
+    let ch = getline('.')[col('.')-1]
+    if ch =~ b:any_openclose_char
+        " Jump to the closing char in order to find the outer
+        " closing char.
+        if ch =~ b:any_opening_char
+            normal! %
         endif
 
-        " Raise sub-form and re-indent
-        exe "normal! y%d%da" . p
-        if getline('.')[col('.')-1] == ' '
-          normal! "0p=%
-        else
-          normal! "0P=%
+        let [p, l, c] = s:FindClosing()
+        if p =~ b:any_closing_char
+            " Raise sub-form and re-indent
+            exe "normal! y%d%da" . p
+            if getline('.')[col('.')-1] == ' '
+              normal! "0p=%
+            else
+              normal! "0P=%
+            endif
+        elseif ch =~ b:any_opening_char
+            " Restore position if there is no appropriate
+            " closing char.
+            normal! %
         endif
     else
         let [p, l, c] = s:FindClosing()
-        if p !~ b:any_closing_char
-            " Not found any kind of parens
-            return
+        if p =~ b:any_closing_char
+            " Raise symbol
+            exe "normal! yiwda" . p
+            normal! "0Pb
         endif
-
-        " Raise symbol
-        exe "normal! yiwda" . p
-        normal! "0Pb
     endif
     let &iskeyword = isk_save
 endfunction
