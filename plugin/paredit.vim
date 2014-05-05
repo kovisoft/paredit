@@ -1621,11 +1621,6 @@ function! s:WrapSelection( open, close )
     execute "normal! i" . a:open
     call setpos( '.', [0, l1, c1 + (l0 == l1), 0] )
     execute "normal! i" . a:close
-    " Always leave the cursor to the opening char's pos after
-    " wrapping selection.
-    if getline('.')[col('.')-1] =~ b:any_closing_char
-        normal! %
-    endif
     let &ve = save_ve
 endfunction
 
@@ -1633,6 +1628,11 @@ endfunction
 " Keep visual mode
 function! PareditWrapSelection( open, close )
     call s:WrapSelection( a:open, a:close )
+    " Always leave the cursor to the opening char's pos after
+    " wrapping selection.
+    if getline('.')[col('.')-1] =~ b:any_closing_char
+        normal! %
+    endif
 endfunction
 
 " Wrap current symbol in parens of the given kind
