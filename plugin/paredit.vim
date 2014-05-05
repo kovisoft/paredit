@@ -1621,6 +1621,11 @@ function! s:WrapSelection( open, close )
     execute "normal! i" . a:open
     call setpos( '.', [0, l1, c1 + (l0 == l1), 0] )
     execute "normal! i" . a:close
+    " Always leave the cursor to the opening char's pos after
+    " wrapping selection.
+    if getline('.')[col('.')-1] =~ b:any_closing_char
+        normal! %
+    endif
     let &ve = save_ve
 endfunction
 
