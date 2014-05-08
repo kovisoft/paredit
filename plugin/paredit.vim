@@ -363,12 +363,16 @@ function! PareditChange( type, ... )
     call PareditOpfunc( 'c', a:type, a:0 )
     if len(getline('.')) == 0
         let v:lnum = line('.')
+        let cnum = col('.')
         let expr = &indentexpr
         if expr == ''
             " No special 'indentexpr', call default lisp indent
             let expr = 'lispindent(v:lnum)'
         endif
         execute "call setline( v:lnum, repeat( ' ', " . expr . " ) )"
+        " Need to restore cursor because indentexpr functions may
+        " move the cursor.
+        call cursor(v:lnum, cnum)
         normal! $l
     elseif startcol > 1
         normal! l
