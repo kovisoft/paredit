@@ -369,7 +369,7 @@ function! PareditChange( type, ... )
             let expr = 'lispindent(v:lnum)'
         endif
         execute "call setline( v:lnum, repeat( ' ', " . expr . " ) )"
-        normal! $l
+        call cursor(v:lnum, len(getline(v:lnum))+1)
     elseif startcol > 1
         normal! l
     endif
