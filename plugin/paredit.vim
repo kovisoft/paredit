@@ -357,7 +357,6 @@ endfunction
 
 " General change operator handling
 function! PareditChange( type, ... )
-    let startcol = col('.')
     let ve_save = &virtualedit
     set virtualedit=all
     call PareditOpfunc( 'c', a:type, a:0 )
@@ -370,7 +369,7 @@ function! PareditChange( type, ... )
         endif
         execute "call setline( v:lnum, repeat( ' ', " . expr . " ) )"
         normal! $l
-    elseif startcol > 1
+    else
         normal! l
     endif
     startinsert
