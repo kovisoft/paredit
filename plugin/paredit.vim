@@ -1102,7 +1102,7 @@ function! s:EraseBck( count )
             call s:AddYankPos( len(reg) )
         else
             " Erasing a non-special character
-            let reg = reg . line[pos-1]
+            let reg = line[pos-1]
             let line = strpart( line, 0, pos-1 ) . strpart( line, pos )
         endif
         normal! h
