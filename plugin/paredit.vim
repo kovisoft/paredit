@@ -1065,7 +1065,7 @@ function! s:EraseFwd( count, startcol )
             normal! l
         elseif pos < len(line) && pos >= a:startcol
             " Erasing a non-special character
-            let reg = reg . line[pos]
+            let reg = line[pos]
             let line = strpart( line, 0, pos ) . strpart( line, pos+1 )
         endif
         let c = c - 1
