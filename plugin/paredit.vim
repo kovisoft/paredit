@@ -1027,7 +1027,7 @@ endfunction
 function! s:EraseFwd( count, startcol )
     let line = getline( '.' )
     let pos = col( '.' ) - 1
-    let reg = getreg( &clipboard == 'unnamed' ? '*' : '"' )
+    let reg = ''
     let ve_save = &virtualedit
     set virtualedit=all
     let c = a:count
@@ -1065,7 +1065,7 @@ function! s:EraseFwd( count, startcol )
             normal! l
         elseif pos < len(line) && pos >= a:startcol
             " Erasing a non-special character
-            let reg = line[pos]
+            let reg = reg . line[pos]
             let line = strpart( line, 0, pos ) . strpart( line, pos+1 )
         endif
         let c = c - 1
