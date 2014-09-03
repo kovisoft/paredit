@@ -1079,7 +1079,7 @@ endfunction
 function! s:EraseBck( count )
     let line = getline( '.' )
     let pos = col( '.' ) - 1
-    let reg = getreg( &clipboard == 'unnamed' ? '*' : '"' )
+    let reg = ''
     let c = a:count
     while c > 0 && pos > 0
         if pos > 1 && line[pos-2] == '\' && line[pos-1] =~ b:any_matched_char && (pos < 3 || line[pos-3] != '\')
@@ -1102,7 +1102,7 @@ function! s:EraseBck( count )
             call s:AddYankPos( len(reg) )
         else
             " Erasing a non-special character
-            let reg = line[pos-1]
+            let reg = reg . line[pos-1]
             let line = strpart( line, 0, pos-1 ) . strpart( line, pos )
         endif
         normal! h
