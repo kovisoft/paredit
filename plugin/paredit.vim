@@ -1106,6 +1106,10 @@ function! s:EraseFwd( count, startcol )
             call s:AddYankPos( len(reg) )
             let pos = pos + 1
             normal! l
+        elseif line[pos] =~ '[^\x00-\x7F]' && pos < len(line) && pos >= a:startcol
+            " Erasing a multibye character
+            let reg = reg . line[pos]
+            let line = strpart( line, 0, pos ) . strpart( line, pos+2 )
         elseif pos < len(line) && pos >= a:startcol
             " Erasing a non-special character
             let chars = split(strpart(line, pos), '\zs')
@@ -1149,6 +1153,10 @@ function! s:EraseBck( count )
         elseif line[pos-1] =~ b:any_matched_char
             " Character-pair is not empty, don't erase
             call s:AddYankPos( len(reg) )
+        elseif line[pos-1] =~ '[^\x00-\x7F]'
+            " Erasing a multibyte character
+            let reg = reg . line[pos-1]
+            let line = strpart( line, 0, pos-2 ) . strpart( line, pos )
         else
             " Erasing a non-special character
             let chars = split(strpart(line, 0, pos), '\zs')
