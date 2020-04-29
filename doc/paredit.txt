@@ -385,7 +385,7 @@ PAREDIT OPTIONS                                               *paredit-options*
 
 |g:paredit_disable_shen|     If defined, paredit is disabled for shen files.
 
-|g:paredit_disable_janet|     If defined, paredit is disabled for janet files.
+|g:paredit_disable_janet|    If defined, paredit is disabled for janet files.
 
 |g:paredit_electric_return|  If nonzero, electric return feature is enabled.
 
