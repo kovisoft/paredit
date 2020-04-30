@@ -385,6 +385,8 @@ PAREDIT OPTIONS                                               *paredit-options*
 
 |g:paredit_disable_shen|     If defined, paredit is disabled for shen files.
 
+|g:paredit_disable_janet|    If defined, paredit is disabled for janet files.
+
 |g:paredit_electric_return|  If nonzero, electric return feature is enabled.
 
 |g:paredit_smartjump|        If nonzero, '(' and ')' also target square brackets
@@ -405,6 +407,7 @@ PAREDIT OPTIONS                                               *paredit-options*
                                                        *g:paredit_disable_lisp*
                                                      *g:paredit_disable_scheme*
                                                        *g:paredit_disable_shen*
+                                                      *g:paredit_disable_janet*
 If defined then paredit is disabled for the given file type. Useful to use
 a different plugin for a specific file type, but keep using paredit for the
 others.
