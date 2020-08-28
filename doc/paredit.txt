@@ -1,4 +1,4 @@
-*paredit.txt*                   Paredit              Last Change: 27 Apr 2020
+*paredit.txt*                   Paredit              Last Change: 28 Aug 2020
 
 Paredit Mode for Vim                                  *paredit* *slimv-paredit*
                                Version 0.9.14
@@ -433,7 +433,7 @@ option |g:slimv_repl_simple_eval| is nonzero. In this case <Enter> is used
 to send the command line to the swank server for evaluation.
 
 Please find a video demonstration of the electric return feature here:
-https://kovisoft.bitbucket.io/openparen.gif
+https://kovisoft.github.io/slimv-tutorial/openparen.gif
 
                                                           *g:paredit_smartjump*
 If nonzero, this option changes the behavior of '(' and ')' in normal and visual
