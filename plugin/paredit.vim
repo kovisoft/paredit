@@ -89,6 +89,9 @@ let s:fts_datum_comment          = '.*\(scheme\).*'
 " Filetypes with hash comment
 let s:fts_hash_comment           = '.*\(janet\).*'
 
+" Filetypes with backtick strings
+let s:fts_backtick_string        = '.*\(janet\).*'
+
 " =====================================================================
 "  General utility functions
 " =====================================================================
@@ -722,11 +725,19 @@ endfunction
 function! s:GetMatchedChars( lines, start_in_string, start_in_comment )
     let inside_string  = a:start_in_string
     let inside_comment = a:start_in_comment
+    let inside_backtick_string = 0
     let multiline_comment = 0
     let matched = repeat( ' ', len( a:lines ) )
     let i = 0
     while i < len( a:lines )
-        if inside_string
+        if inside_backtick_string
+            " We are inside a string, skip parens, wait for closing '`'
+            " but skip escaped \` characters
+            if a:lines[i] == '`' && a:lines[i-1] != '\'
+                let matched = strpart( matched, 0, i ) . a:lines[i] . strpart( matched, i+1 )
+                let inside_backtick_string = 0
+            endif
+        elseif inside_string
             " We are inside a string, skip parens, wait for closing '"'
             " but skip escaped \" characters
             if a:lines[i] == '"' && a:lines[i-1] != '\'
@@ -754,6 +765,9 @@ function! s:GetMatchedChars( lines, start_in_string, start_in_comment )
             if a:lines[i] == '"'
                 let matched = strpart( matched, 0, i ) . a:lines[i] . strpart( matched, i+1 )
                 let inside_string = 1
+            elseif a:lines[i] == '`'
+                let matched = strpart( matched, 0, i ) . a:lines[i] . strpart( matched, i+1 )
+                let inside_backtick_string = 1
             endif
             let comment_char = ';'
             if &ft =~ s:fts_hash_comment
@@ -791,6 +805,9 @@ function! s:Unbalanced( matched )
             let tmp = substitute( tmp, '{\(\s*\)}',   ' \1 ', 'g')
         endif
         let tmp = substitute( tmp, '"\(\s*\)"',   ' \1 ', 'g')
+        if &ft =~ s:fts_backtick_string
+            let tmp = substitute( tmp, '`\(\s*\)`',   ' \1 ', 'g')
+        endif
         if tmp == matched
             " All paired chars eliminated
             let tmp = substitute( tmp, ')\(\s*\)(',   ' \1 ', 'g')
