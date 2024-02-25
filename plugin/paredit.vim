@@ -86,6 +86,9 @@ let s:fts_multiline_comment      = '.*\(scheme\|racket\).*'
 " Filetypes with datum comment #;(...)
 let s:fts_datum_comment          = '.*\(scheme\).*'
 
+" Filetypes with hash comment
+let s:fts_hash_comment           = '.*\(janet\).*'
+
 " =====================================================================
 "  General utility functions
 " =====================================================================
@@ -588,11 +591,15 @@ function! s:InsideComment( ... )
     let c = a:0 ? a:2 : col('.')
     if &syntax == ''
         " No help from syntax engine,
-        " remove strings and search for ';' up to the cursor position
+        " remove strings and search for ';' (Janet: '#') up to the cursor position
         let line = strpart( getline(l), 0, c - 1 )
         let line = substitute( line, '\\"', '', 'g' )
         let line = substitute( line, '"[^"]*"', '', 'g' )
-        return match( line, ';' ) >= 0
+        let comment_char = ';'
+        if &ft =~ s:fts_hash_comment
+            let comment_char = '#'
+        endif
+        return match( line, comment_char ) >= 0
     endif
     if s:SynIDMatch( 'clojureComment', l, c, 1 )
         if strpart( getline(l), c-1, 2 ) == '#_' || strpart( getline(l), c-2, 2 ) == '#_'
@@ -748,7 +755,11 @@ function! s:GetMatchedChars( lines, start_in_string, start_in_comment )
                 let matched = strpart( matched, 0, i ) . a:lines[i] . strpart( matched, i+1 )
                 let inside_string = 1
             endif
-            if a:lines[i] == ';'
+            let comment_char = ';'
+            if &ft =~ s:fts_hash_comment
+                let comment_char = '#'
+            endif
+            if a:lines[i] == comment_char
                 let inside_comment = 1
                 if &ft =~ s:fts_datum_comment && i > 0 && a:lines[i-1] == '#'
                     " Datum comment: pretend that we are not inside comment
@@ -1206,12 +1217,16 @@ function! s:EraseFwd( count, startcol )
     let ve_save = &virtualedit
     set virtualedit=all
     let c = a:count
+    let comment_char = ';'
+    if &ft =~ s:fts_hash_comment
+        let comment_char = '#'
+    endif
     while c > 0
         if line[pos] == '\' && line[pos+1] =~ b:any_matched_char && (pos < 1 || line[pos-1] != '\')
             " Erasing an escaped matched character
             let reg = reg . line[pos : pos+1]
             let line = strpart( line, 0, pos ) . strpart( line, pos+2 )
-        elseif s:InsideComment() && line[pos] == ';' && a:startcol >= 0
+        elseif s:InsideComment() && line[pos] == comment_char && a:startcol >= 0
             " Erasing the whole comment, only when erasing a block of characters
             let reg = reg . strpart( line, pos )
             let line = strpart( line, 0, pos )
