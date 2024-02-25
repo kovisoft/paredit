@@ -726,16 +726,19 @@ function! s:GetMatchedChars( lines, start_in_string, start_in_comment )
     let inside_string  = a:start_in_string
     let inside_comment = a:start_in_comment
     let inside_backtick_string = 0
+    let backtick_count = 1
     let multiline_comment = 0
     let matched = repeat( ' ', len( a:lines ) )
     let i = 0
     while i < len( a:lines )
         if inside_backtick_string
-            " We are inside a string, skip parens, wait for closing '`'
-            " but skip escaped \` characters
-            if a:lines[i] == '`' && a:lines[i-1] != '\'
-                let matched = strpart( matched, 0, i ) . a:lines[i] . strpart( matched, i+1 )
+            " We are inside a string, skip parens, wait for closing '`' (1 or
+            " more) but skip escaped \` characters
+            let last = i + backtick_count - 1
+            if a:lines[i:last] == repeat('`', backtick_count) && a:lines[i-1] != '\'
+                let matched = strpart( matched, 0, i ) . a:lines[i:last] . strpart( matched, i+backtick_count )
                 let inside_backtick_string = 0
+                let i = last
             endif
         elseif inside_string
             " We are inside a string, skip parens, wait for closing '"'
@@ -766,8 +769,14 @@ function! s:GetMatchedChars( lines, start_in_string, start_in_comment )
                 let matched = strpart( matched, 0, i ) . a:lines[i] . strpart( matched, i+1 )
                 let inside_string = 1
             elseif a:lines[i] == '`'
-                let matched = strpart( matched, 0, i ) . a:lines[i] . strpart( matched, i+1 )
                 let inside_backtick_string = 1
+                let backtick_count = 1
+                let first = i
+                while a:lines[i+1] == '`'
+                    let i = i + 1
+                    let backtick_count = backtick_count + 1
+                endwhile
+                let matched = strpart( matched, 0, first ) . a:lines[first:i] . strpart( matched, i+1 )
             endif
             let comment_char = ';'
             if &ft =~ s:fts_hash_comment
@@ -806,6 +815,8 @@ function! s:Unbalanced( matched )
         endif
         let tmp = substitute( tmp, '"\(\s*\)"',   ' \1 ', 'g')
         if &ft =~ s:fts_backtick_string
+            let tmp = substitute( tmp, '```\(\s*\)```',   '   \1   ', 'g')
+            let tmp = substitute( tmp, '``\(\s*\)``',   '  \1  ', 'g')
             let tmp = substitute( tmp, '`\(\s*\)`',   ' \1 ', 'g')
         endif
         if tmp == matched
