@@ -1091,7 +1091,7 @@ endfunction
 
 " Handle <Enter> keypress, insert electric return if applicable
 function! PareditEnter()
-    if pumvisible() && &completeopt !~# 'longest\|noinsert\|noselect'
+    if pumvisible()
         " Pressing <CR> in a pop up selects entry.
         return "\<C-Y>"
     else
