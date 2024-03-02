@@ -1092,8 +1092,14 @@ endfunction
 " Handle <Enter> keypress, insert electric return if applicable
 function! PareditEnter()
     if pumvisible()
-        " Pressing <CR> in a pop up selects entry.
-        return "\<C-Y>"
+        let lastchar = getline('.')[col('.')-2]
+        if stridx(')]}', lastchar) >= 0
+            " Select entry and add closing bracket (which vim removes)
+            return "\<C-Y>" . lastchar . "\<Left>"
+        else
+            " Pressing <CR> in a pop up selects entry.
+            return "\<C-Y>"
+        endif
     else
         let line = getline( '.' )
         let pos = col( '.' ) - 1
