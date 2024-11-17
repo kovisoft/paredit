@@ -1,7 +1,7 @@
 " paredit.vim:
 "               Paredit mode for Slimv
 " Version:      0.9.14
-" Last Change:  11 Mar 2024
+" Last Change:  17 Nov 2024
 " Maintainer:   Tamas Kovacs <kovisoft at gmail dot com>
 " License:      This file is placed in the public domain.
 "               No warranty, express or implied.
@@ -36,7 +36,7 @@ endif
 
 " Match delimiter this number of lines before and after cursor position
 if !exists( 'g:paredit_matchlines' )
-    let g:paredit_matchlines = 100
+    let g:paredit_matchlines = 200
 endif
 
 " Use short keymaps, i.e. J instead of <Leader>J
